@@ -139,7 +139,7 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('clicks')">Еда</button>
             <button class="tab-btn" onclick="switchTab('autos')">Кликеры</button>
-            <button class="tab-btn" onclick="switchTab('vitamins')">Витамины</button>
+            <button class="tab-btn" onclick="switchTab('vitamins')">Витаны</button>
             <button class="tab-btn" onclick="switchTab('kennel')">Питомник</button>
             <button class="tab-btn" onclick="switchTab('achievs')">Ачивки</button>
         </div>
@@ -168,12 +168,19 @@
         let cometMultiplier = 1;
         let cometTimer = null;
 
-        // Элементы
+        // Элементы UI
         const scoreEl = document.getElementById('score');
         const mpsEl = document.getElementById('mps-display');
         const mopsPic = document.getElementById('mops-pic');
         const moodBar = document.getElementById('mood-bar');
         const cometEl = document.getElementById('dumpling-comet');
+
+        // Связываем панели магазина с переменными (Исправлено!)
+        const clicksPanel = document.getElementById('clicks-panel');
+        const autosPanel = document.getElementById('autos-panel');
+        const vitaminsPanel = document.getElementById('vitamins-panel');
+        const kennelPanel = document.getElementById('kennel-panel');
+        const achievsPanel = document.getElementById('achievs-panel');
 
         // Списки улучшений
         const foodUpgrades = [
@@ -215,51 +222,23 @@
             { id: 'ac4', name: 'Повелитель псов', desc: 'Иметь суммарно 10 мопсов в стае.', unlocked: false, check: () => (adultPugs + babyPugs) >= 10 }
         ];
 
-        // Куки
-        function setCookie(name, value) {
-            const date = new Date(); date.setTime(date.getTime() + (365*24*60*60*1000));
-            document.cookie = name + "=" + encodeURIComponent(value) + ";expires=" + date.toUTCString() + ";path=/";
-        }
-        function getCookie(name) {
-            const matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
-            return matches ? decodeURIComponent(matches[1]) : undefined;
-        }
-
-        // Выбор на Старте
-        function checkFirstLaunch() {
-            if (!getCookie('mops_chosen_start')) {
-                document.getElementById('start-modal').style.display = 'flex';
-            } else {
-                loadGame();
-            }
-        }
-
-        window.chooseStart = function(type) {
-            if (type === 'adult') { adultPugs = 1; } 
-            else { babyPugs = 2; }
-            setCookie('mops_chosen_start', 'true');
-            document.getElementById('start-modal').style.display = 'none';
-            recalculateStats();
-            saveGame();
-        };
-
-        // Сохранение / Загрузка
+        // Новая система сохранения через localStorage (Исправлено!)
         function saveGame() {
             const save = {
-                mopsCoins, adultPugs, babyPugs, goldenFolds, totalDumplingsCaught,
+                mopsCoins, adultPugs, babyPugs, goldenFolds, totalDumplingsCaught, mood,
                 food: foodUpgrades.map(f => ({ id: f.id, count: f.count, cost: f.cost })),
                 autos: autoUpgrades.map(a => ({ id: a.id, count: a.count, cost: a.cost })),
                 vitamins: vitaminUpgrades.map(v => ({ id: v.id, count: v.count, cost: v.cost })),
                 achievs: achievements.map(ac => ({ id: ac.id, unlocked: ac.unlocked }))
             };
-            setCookie('mops_clicker_mega_save', JSON.stringify(save));
+            localStorage.setItem('mops_clicker_mega_save', JSON.stringify(save));
             document.getElementById('save-notify').style.opacity = 1;
             setTimeout(() => document.getElementById('save-notify').style.opacity = 0, 1000);
         }
 
         function loadGame() {
-            const data = getCookie('mops_clicker_mega_save');
-            if (!data) return;
+            const data = localStorage.getItem('mops_clicker_mega_save');
+            if (!data) return false;
             try {
                 const save = JSON.parse(data);
                 mopsCoins = save.mopsCoins || 0;
@@ -267,13 +246,42 @@
                 babyPugs = save.babyPugs || 0;
                 goldenFolds = save.goldenFolds || 0;
                 totalDumplingsCaught = save.totalDumplingsCaught || 0;
+                mood = save.mood !== undefined ? save.mood : 100;
 
                 if(save.food) save.food.forEach(s => { let x = foodUpgrades.find(f=>f.id===s.id); if(x){x.count=s.count; x.cost=s.cost;} });
                 if(save.autos) save.autos.forEach(s => { let x = autoUpgrades.find(a=>a.id===s.id); if(x){x.count=s.count; x.cost=s.cost;} });
                 if(save.vitamins) save.vitamins.forEach(s => { let x = vitaminUpgrades.find(v=>v.id===s.id); if(x){x.count=s.count; x.cost=s.cost;} });
                 if(save.achievs) save.achievs.forEach(s => { let x = achievements.find(ac=>ac.id===s.id); if(x){x.unlocked=s.unlocked;} });
-            } catch(e) { console.error(e); }
+                return true;
+            } catch(e) { 
+                console.error(e); 
+                return false; 
+            }
         }
+
+        // Выбор на Старте
+        function checkFirstLaunch() {
+            const hasSave = loadGame();
+            const chosenStart = localStorage.getItem('mops_chosen_start');
+            if (!chosenStart && !hasSave) {
+                document.getElementById('start-modal').style.display = 'flex';
+            } else {
+                recalculateStats();
+                initShop();
+                updateUI();
+            }
+        }
+
+        window.chooseStart = function(type) {
+            if (type === 'adult') { adultPugs = 1; } 
+            else { babyPugs = 2; }
+            localStorage.setItem('mops_chosen_start', 'true');
+            document.getElementById('start-modal').style.display = 'none';
+            recalculateStats();
+            initShop();
+            updateUI();
+            saveGame();
+        };
 
         function recalculateStats() {
             let baseClick = 1 + (adultPugs * 5);
@@ -285,13 +293,13 @@
             let vitMult = 1;
             vitaminUpgrades.forEach(v => vitMult *= Math.pow(v.mult, v.count));
 
-            let prestigeMult = 1 + (goldenFolds * 0.5); // +50% за складку
+            let prestigeMult = 1 + (goldenFolds * 0.5); 
             let moodFactor = mood / 100;
 
             mpcPerClick = baseClick * vitMult * prestigeMult * moodFactor * cometMultiplier;
             mopsPerSecond = baseMps * vitMult * prestigeMult * moodFactor;
 
-            // Скины (Идея 1)
+            // Скины 
             let totalEaten = foodUpgrades.reduce((acc, f) => acc + f.count, 0);
             if (totalEaten >= 50) {
                 document.getElementById('game-title').textContent = "🪐 Сатурновый Владыка";
@@ -322,7 +330,7 @@
             recalculateStats();
         };
 
-        // Комета-пельмень (Идея 2)
+        // Комета-пельмень 
         function spawnDumpling() {
             if(cometMultiplier > 1) return;
             let x = Math.random() * 200 + 50;
@@ -343,7 +351,7 @@
         };
         setInterval(spawnDumpling, 45000);
 
-        // Престиж (Идея 5)
+        // Престиж 
         window.triggerPrestigePage = function() {
             if(mopsCoins < 1000000) { alert("Нужно хотя бы 1,000,000 МПС для взрыва!"); return; }
             let gained = Math.floor(Math.log10(mopsCoins) - 5);
@@ -355,7 +363,7 @@
             let gained = parseInt(document.getElementById('folds-gained').textContent);
             goldenFolds += gained;
             mopsCoins = 0;
-            foodUpgrades.forEach(f => { f.count = 0; if(f.id!=='infinity') f.cost = f.cost / 2; }); // Скидка после взрыва!
+            foodUpgrades.forEach(f => { f.count = 0; if(f.id!=='infinity') f.cost = Math.floor(f.cost / 2); }); 
             autoUpgrades.forEach(a => a.count = 0);
             document.getElementById('prestige-screen').style.display = 'none';
             recalculateStats();
@@ -417,18 +425,16 @@
                 vitaminsPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">${u.desc} (${u.count})</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyVitamin('${u.id}')">${formatValue(u.cost)}</button></div>`;
             });
             // Питомник
-            let kennel = document.getElementById('kennel-panel');
             let aCost = 1000 + adultPugs * 1500;
             let bCost = 300 + babyPugs * 400;
-            kennel.innerHTML = `
+            kennelPanel.innerHTML = `
                 <div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">Маленький мопс</div><div class="upgrade-desc">+1.5 МПС к пассивному доходу базово.</div></div><button class="buy-btn" id="btn-baby" onclick="buyPug('baby')">${formatValue(bCost)}</button></div>
                 <div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">Взрослый мопс</div><div class="upgrade-desc">+5 к силе клика базово.</div></div><button class="buy-btn" id="btn-adult" onclick="buyPug('adult')">${formatValue(aCost)}</button></div>
             `;
             // Ачивки
-            let achPanel = document.getElementById('achievs-panel');
-            achPanel.innerHTML = '';
+            achievsPanel.innerHTML = '';
             achievements.forEach(ac => {
-                achPanel.innerHTML += `<div class="upgrade-item" style="opacity: ${ac.unlocked ? 1 : 0.4}"><div class="upgrade-info"><div class="upgrade-name">${ac.name}</div><div class="upgrade-desc">${ac.desc}</div></div><div style="font-weight:bold; color:#00ffcc">${ac.unlocked ? 'ВЫПОЛНЕНО' : 'ЗАКРЫТО'}</div></div>`;
+                achievsPanel.innerHTML += `<div class="upgrade-item" style="opacity: ${ac.unlocked ? 1 : 0.4}"><div class="upgrade-info"><div class="upgrade-name">${ac.name}</div><div class="upgrade-desc">${ac.desc}</div></div><div style="font-weight:bold; color:#00ffcc">${ac.unlocked ? 'ВЫПОЛНЕНО' : 'ЗАКРЫТО'}</div></div>`;
             });
         }
 
@@ -436,7 +442,7 @@
             if (val === Infinity || val >= 1e22) return '∞';
             if (val >= 1e12) return (val / 1e12).toFixed(2) + ' Трлн';
             if (val >= 1e9) return (val / 1e9).toFixed(2) + ' Млрд';
-            if (val >= 1e6) return (val / 1e6).toFixed(2) + ' Млн';
+            if (val >= 1e6) return (val / 1e6).toFixed(2) + ' Мн';
             return Math.floor(val).toLocaleString();
         }
 
@@ -468,12 +474,13 @@
 
         window.resetGame = function(force=false) {
             if(force || confirm("Сбросить стаю и пузо мопса?")) {
-                setCookie('mops_chosen_start', ''); setCookie('mops_clicker_mega_save', '');
+                localStorage.removeItem('mops_chosen_start'); 
+                localStorage.removeItem('mops_clicker_mega_save');
                 location.reload();
             }
         };
 
-        // Циклы
+        // Игровые тики
         setInterval(() => {
             if (mopsPerSecond > 0) { mopsCoins += mopsPerSecond / 10; updateUI(); }
             // Настроение падает
@@ -486,13 +493,11 @@
             });
         }, 100);
 
+        // Автосохранение каждые 15 секунд
         setInterval(saveGame, 15000);
 
-        // Старт
+        // Старт игры
         checkFirstLaunch();
-        initShop();
-        recalculateStats();
-        updateUI();
     </script>
 </body>
 </html>
