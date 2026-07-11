@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мопсокликер — МЕГА ОБНОВЛЕНИЕ</title>
+    <title>Мопсокликер — ИНФИНАТИ ОБНОВЛЕНИЕ</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -32,20 +32,47 @@
         /* Левая панель */
         .clicker-section {
             flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
+            align-items: center; justify-content: flex-start;
             background: radial-gradient(circle, #251810 0%, #050510 100%);
             position: relative; padding: 20px; box-sizing: border-box;
+            overflow-y: auto;
         }
 
-        h1 { font-size: 2.5rem; margin-bottom: 5px; color: #ffb84d; text-shadow: 0 0 10px rgba(255, 184, 77, 0.5); }
-        .score-display { font-size: 2rem; font-weight: bold; margin-bottom: 20px; color: #00ffcc; }
+        /* Фиксированная зона для баланса над мопсом */
+        .header-score-zone {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+
+        h1 { font-size: 2.3rem; margin: 0 0 5px 0; color: #ffb84d; text-shadow: 0 0 10px rgba(255, 184, 77, 0.5); }
+        .score-display { font-size: 2.2rem; font-weight: bold; margin-bottom: 5px; color: #00ffcc; word-wrap: break-word; }
+        .mpc-ps { font-size: 1.1rem; color: #fff; margin-bottom: 5px; }
         
         /* Шкала настроения */
-        .mood-container { width: 300px; background: #333; height: 20px; border-radius: 10px; margin-bottom: 20px; overflow: hidden; border: 2px solid #ffb84d; }
+        .mood-container { width: 300px; background: #333; height: 20px; border-radius: 10px; margin: 10px auto; overflow: hidden; border: 2px solid #ffb84d; cursor: pointer; }
         .mood-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #ff3333, #ffb84d, #00ffcc); transition: width 0.3s; }
 
-        .pug-container { position: relative; cursor: pointer; transition: transform 0.05s ease; }
-        .pug-image { width: 320px; height: 320px; border-radius: 50%; object-fit: cover; border: 5px solid #ffb84d; transition: transform 0.3s ease; }
+        /* Контейнер мопса с большим запасом места для разжирения */
+        .pug-container { 
+            position: relative; 
+            cursor: pointer; 
+            margin: 60px 0; /* Дает место, чтобы толстый мопс не залезал на текст */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px;
+        }
+        .pug-image { 
+            width: 300px; 
+            height: 300px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 5px solid #ffb84d; 
+            transition: transform 0.1s ease; 
+            transform-origin: center center;
+        }
 
         /* Комета-пельмень */
         #dumpling-comet {
@@ -72,11 +99,11 @@
         .buy-btn { background: #00ffcc; color: #000; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .buy-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-        /* Вылетающие цифры */
-        .click-text { position: absolute; color: #00ffcc; font-weight: bold; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; text-shadow: 0 0 5px #000; z-index: 100; }
-        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
+        /* Вылетающие цифры — теперь вылетают гарантированно поверх всего */
+        .click-text { position: absolute; color: #00ffcc; font-weight: bold; font-size: 1.8rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; text-shadow: 2px 2px 8px #000; z-index: 9999; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-120px) scale(1.2); opacity: 0; } }
 
-        #victory-screen, #prestige-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        #victory-screen, #prestige-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         .save-notification { position: absolute; bottom: 20px; left: 20px; background: rgba(0, 255, 204, 0.2); border: 1px solid #00ffcc; padding: 8px 15px; border-radius: 5px; color: #00ffcc; opacity: 0; transition: opacity 0.5s; }
     </style>
 </head>
@@ -100,20 +127,21 @@
 
     <div id="victory-screen">
         <h2>КОНЕЦ ВСЕГО</h2>
-        <p>Мопс поглотил Бесконечность. Игра окончена.</p>
+        <p>Мопс сожрал Абсолютно Всё. Игра окончена.</p>
         <button class="choice-btn" onclick="resetGame(true)">Сбросить всё</button>
     </div>
 
     <div class="clicker-section">
-        <h1 id="game-title">Мопсокликер</h1>
-        <div class="score-display" id="score">0 МПС</div>
-        <div class="mpc-ps" id="mps-display">В секунду: 0</div>
-        
-        <div style="color: #ffb84d; margin-bottom: 5px;" id="pack-display">Стая: 0 взр. / 0 мал.</div>
-        
-        <div style="font-size: 0.9rem; color: #aaa;">Настроение (Почеши пузико!):</div>
-        <div class="mood-container" onclick="scratchPug()">
-            <div class="mood-bar" id="mood-bar"></div>
+        <div class="header-score-zone">
+            <h1 id="game-title">Мопсокликер</h1>
+            <div class="score-display" id="score">0 МПС</div>
+            <div class="mpc-ps" id="mps-display">В секунду: 0</div>
+            <div style="color: #ffb84d; margin-bottom: 5px;" id="pack-display">Стая: 0 взр. / 0 мал.</div>
+            
+            <div style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">Настроение (Почеши пузико!):</div>
+            <div class="mood-container" onclick="scratchPug()">
+                <div class="mood-bar" id="mood-bar"></div>
+            </div>
         </div>
         
         <div class="pug-container" id="pug-click">
@@ -121,11 +149,11 @@
             <img src="Gemini_Generated_Image_a1v00ea1v00ea1v0.png" onerror="this.src='https://picsum.photos/id/1025/320/320'" class="pug-image" id="mops-pic" alt="Мопс">
         </div>
 
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <div style="margin-top: auto; display: flex; gap: 10px; padding-bottom: 10px; z-index: 10;">
             <button class="buy-btn" style="background:#ff9900;" onclick="triggerPrestigePage()">Взорваться (Престиж)</button>
             <button class="buy-btn" style="background:#ff3333; color:#fff;" onclick="resetGame()">Сброс</button>
         </div>
-        <div style="margin-top: 10px; color: #ffb84d;" id="prestige-info">Золотых Складок: 0 (Бонус: +0%)</div>
+        <div style="margin-bottom: 20px; color: #ffb84d; z-index: 10;" id="prestige-info">Золотых Складок: 0 (Бонус: +0%)</div>
 
         <div class="save-notification" id="save-notify">Сохранено!</div>
     </div>
@@ -161,7 +189,6 @@
         let totalDumplingsCaught = 0;
         
         let cometMultiplier = 1;
-        let cometTimer = null;
 
         // Элементы UI
         const scoreEl = document.getElementById('score');
@@ -177,7 +204,7 @@
         const kennelPanel = document.getElementById('kennel-panel');
         const achievsPanel = document.getElementById('achievs-panel');
 
-        // Списки улучшений
+        // Списки улучшений (подстроены под супер-числа)
         const foodUpgrades = [
             { id: 'f1', name: 'Кусочек хлеба', cost: 10, add: 1, count: 0 },
             { id: 'f2', name: 'Сосиска', cost: 100, add: 5, count: 0 },
@@ -188,10 +215,13 @@
             { id: 'f7', name: 'Кастрюля пельменей', cost: 250000, add: 20000, count: 0 },
             { id: 'f9', name: 'Квартира', cost: 7000000, add: 550000, count: 0 },
             { id: 'f10', name: 'Дом', cost: 50000000, add: 4000000, count: 0 },
-            { id: 'p3', name: 'Земля', cost: 35000000000000, add: 8000000000000, count: 0 },
-            { id: 'p6', name: 'Сатурн (родной трон)', cost: 10000000000000000, add: 4000000000000000, count: 0 },
-            { id: 'c2', name: 'Вселенная', cost: 50000000000000000000, add: 20000000000000000000, count: 0 },
-            { id: 'infinity', name: 'БЕСКОНЕЧНОСТЬ', cost: 1e22, add: 0, count: 0 }
+            { id: 'p3', name: 'Планета Земля', cost: 3.5e13, add: 8e12, count: 0 },
+            { id: 'p6', name: 'Сатурн (родной трон)', cost: 1e24, add: 4e22, count: 0 },
+            { id: 'c2', name: 'Завод Гугол-Пельменей', cost: 1e100, add: 1e99, count: 0 },
+            { id: 'c3', name: 'Гиперпространство Мегагугла', cost: 1e500, add: 1e499, count: 0 },
+            { id: 'c4', name: 'Пердальный Излучатель', cost: 1e1000, add: 1e999, count: 0 },
+            { id: 'c5', name: 'Сверхплотный Мопсолион', cost: 1e5000, add: 1e4999, count: 0 },
+            { id: 'infinity', name: 'БЕСКОНЕЧНОСТЬ', cost: 1e6000, add: 0, count: 0 }
         ];
 
         const autoUpgrades = [
@@ -209,7 +239,6 @@
             { id: 'v3', name: 'Космический Кальций', cost: 80000, mult: 1.5, count: 0, desc: '+50% к мощи.' }
         ];
 
-        // Достижения
         const achievements = [
             { id: 'ac1', name: 'Первая складка', desc: 'Собрать 1,000 мопскоинов.', unlocked: false, check: () => mopsCoins >= 1000 },
             { id: 'ac2', name: 'Сосисочный Барон', desc: 'Купить 5 Больших сосисок.', unlocked: false, check: () => foodUpgrades.find(f=>f.id==='f3').count >= 5 },
@@ -217,14 +246,12 @@
             { id: 'ac4', name: 'Повелитель псов', desc: 'Иметь суммарно 10 мопсов в стае.', unlocked: false, check: () => (adultPugs + babyPugs) >= 10 }
         ];
 
-        // Функция общего клика (для мышки и клавиатуры)
         function performClick(clientX, clientY) {
             mopsCoins += mpcPerClick;
             createClickEffect(clientX, clientY, mpcPerClick);
             updateUI();
         }
 
-        // Система сохранения через localStorage
         function saveGame() {
             const save = {
                 mopsCoins, adultPugs, babyPugs, goldenFolds, totalDumplingsCaught, mood,
@@ -255,17 +282,12 @@
                 if(save.vitamins) save.vitamins.forEach(s => { let x = vitaminUpgrades.find(v=>v.id===s.id); if(x){x.count=s.count; x.cost=s.cost;} });
                 if(save.achievs) save.achievs.forEach(s => { let x = achievements.find(ac=>ac.id===s.id); if(x){x.unlocked=s.unlocked;} });
                 return true;
-            } catch(e) { 
-                console.error(e); 
-                return false; 
-            }
+            } catch(e) { return false; }
         }
 
-        // Выбор на Старте
         function checkFirstLaunch() {
             const hasSave = loadGame();
-            const chosenStart = localStorage.getItem('mops_chosen_start');
-            if (!chosenStart && !hasSave) {
+            if (!localStorage.getItem('mops_chosen_start') && !hasSave) {
                 document.getElementById('start-modal').style.display = 'flex';
             } else {
                 recalculateStats();
@@ -275,14 +297,10 @@
         }
 
         window.chooseStart = function(type) {
-            if (type === 'adult') { adultPugs = 1; } 
-            else { babyPugs = 2; }
+            if (type === 'adult') { adultPugs = 1; } else { babyPugs = 2; }
             localStorage.setItem('mops_chosen_start', 'true');
             document.getElementById('start-modal').style.display = 'none';
-            recalculateStats();
-            initShop();
-            updateUI();
-            saveGame();
+            recalculateStats(); initShop(); updateUI(); saveGame();
         };
 
         function recalculateStats() {
@@ -301,43 +319,33 @@
             mpcPerClick = baseClick * vitMult * prestigeMult * moodFactor * cometMultiplier;
             mopsPerSecond = baseMps * vitMult * prestigeMult * moodFactor;
 
-            // Скины 
-            let totalEaten = foodUpgrades.reduce((acc, f) => acc + f.count, 0);
-            if (totalEaten >= 50) {
-                document.getElementById('game-title').textContent = "🪐 Сатурновый Владыка";
-            } else if (totalEaten >= 20) {
-                document.getElementById('game-title').textContent = "🏢 Мопс в Квартире";
-            } else {
-                document.getElementById('game-title').textContent = "Мопсокликер";
-            }
+            // Динамические титулы по размеру кошелька
+            if (mopsCoins >= 1e5000) document.getElementById('game-title').textContent = "🐕 Божественный Мопсолион";
+            else if (mopsCoins >= 1e1000) document.getElementById('game-title').textContent = "💨 Император Пердалионов";
+            else if (mopsCoins >= 1e500) document.getElementById('game-title').textContent = "🪐 Мегагугловый Владыка";
+            else if (mopsCoins >= 1e100) document.getElementById('game-title').textContent = "🧮 Цифровой Гугол";
+            else if (mopsCoins >= 1e303) document.getElementById('game-title').textContent = "🌌 Центиллионная Складка";
+            else document.getElementById('game-title').textContent = "Мопсокликер";
 
             document.getElementById('pack-display').textContent = `Стая: ${adultPugs} взр. / ${babyPugs} мал.`;
             document.getElementById('prestige-info').textContent = `Золотых Складок: ${goldenFolds} (Бонус: +${goldenFolds * 50}%)`;
             
-            let scale = Math.min(2.2, 1 + (vitMult - 1) * 0.1);
+            // Витамины расширяют мопса! Ограничим визуальный размер, чтобы он не сломал экран, но рос заметно
+            let scale = Math.min(3.5, 1 + (vitMult - 1) * 0.05);
             mopsPic.style.transform = `scale(${scale})`;
         }
 
-        // Клик Мышкой по мопсу
         document.getElementById('pug-click').addEventListener('click', (e) => {
             if(e.target === cometEl) return;
             performClick(e.clientX, e.clientY);
         });
 
-        // Клик через ПРОБЕЛ на клавиатуре (Новая фича!)
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
-                e.preventDefault(); // Запрещаем прокрутку страницы вниз при нажатии пробела
-                
-                // Эмулируем координаты клика в районе центра картинки мопса
+                e.preventDefault(); 
                 const rect = mopsPic.getBoundingClientRect();
                 const randomX = rect.left + rect.width / 2 + (Math.random() * 60 - 30);
                 const randomY = rect.top + rect.height / 2 + (Math.random() * 60 - 30);
-                
-                // Делаем легкий визуальный «толчок» мопса при клике на пробел
-                mopsPic.style.transform = mopsPic.style.transform + ' scale(0.97)';
-                setTimeout(() => recalculateStats(), 40);
-
                 performClick(randomX, randomY);
             }
         });
@@ -348,30 +356,23 @@
             recalculateStats();
         };
 
-        // Комета-пельмень 
         function spawnDumpling() {
             if(cometMultiplier > 1) return;
-            let x = Math.random() * 200 + 50;
-            let y = Math.random() * 200 + 50;
-            cometEl.style.left = x + 'px';
-            cometEl.style.top = y + 'px';
+            let x = Math.random() * 160 + 20;
+            let y = Math.random() * 160 + 20;
+            cometEl.style.left = x + 'px'; cometEl.style.top = y + 'px';
             cometEl.style.display = 'block';
-
             setTimeout(() => { cometEl.style.display = 'none'; }, 4000);
         }
         window.catchDumpling = function(e) {
-            e.stopPropagation();
-            cometEl.style.display = 'none';
-            totalDumplingsCaught++;
-            cometMultiplier = 5;
-            recalculateStats();
+            e.stopPropagation(); cometEl.style.display = 'none';
+            totalDumplingsCaught++; cometMultiplier = 5; recalculateStats();
             setTimeout(() => { cometMultiplier = 1; recalculateStats(); }, 15000);
         };
         setInterval(spawnDumpling, 45000);
 
-        // Престиж 
         window.triggerPrestigePage = function() {
-            if(mopsCoins < 1000000) { alert("Нужно хотя бы 1,000,000 МПС для взрыва!"); return; }
+            if(mopsCoins < 1e6) { alert("Нужно хотя бы 1,000,000 МПС для взрыва!"); return; }
             let gained = Math.floor(Math.log10(mopsCoins) - 5);
             gained = Math.max(1, gained);
             document.getElementById('folds-gained').textContent = gained;
@@ -379,88 +380,85 @@
         };
         window.confirmPrestige = function() {
             let gained = parseInt(document.getElementById('folds-gained').textContent);
-            goldenFolds += gained;
-            mopsCoins = 0;
+            goldenFolds += gained; mopsCoins = 0;
             foodUpgrades.forEach(f => { f.count = 0; if(f.id!=='infinity') f.cost = Math.floor(f.cost / 2); }); 
             autoUpgrades.forEach(a => a.count = 0);
             document.getElementById('prestige-screen').style.display = 'none';
-            recalculateStats();
-            initShop();
-            saveGame();
+            recalculateStats(); initShop(); updateUI(); saveGame();
         };
 
-        // Покупки Мопсов
         window.buyPug = function(type) {
             let cost = type === 'adult' ? (1000 + adultPugs * 1500) : (300 + babyPugs * 400);
             if(mopsCoins >= cost) {
-                mopsCoins -= cost;
-                if(type === 'adult') adultPugs++; else babyPugs++;
-                recalculateStats();
-                initShop();
-                updateUI();
-                saveGame();
+                mopsCoins -= cost; if(type === 'adult') adultPugs++; else babyPugs++;
+                recalculateStats(); initShop(); updateUI(); saveGame();
             }
         };
 
-        // Логика магазина
         window.buyFood = function(id) {
             let u = foodUpgrades.find(f=>f.id===id);
             if(id === 'infinity' && mopsCoins >= u.cost) { document.getElementById('victory-screen').style.display = 'flex'; return; }
-            if(mopsCoins >= u.cost) {
-                mopsCoins -= u.cost; u.count++; u.cost = Math.floor(u.cost*1.3);
-                recalculateStats(); initShop(); updateUI(); saveGame();
-            }
+            if(mopsCoins >= u.cost) { mopsCoins -= u.cost; u.count++; u.cost *= 1.3; recalculateStats(); initShop(); updateUI(); saveGame(); }
         };
         window.buyAuto = function(id) {
             let u = autoUpgrades.find(a=>a.id===id);
-            if(mopsCoins >= u.cost) {
-                mopsCoins -= u.cost; u.count++; u.cost = Math.floor(u.cost*1.25);
-                recalculateStats(); initShop(); updateUI(); saveGame();
-            }
+            if(mopsCoins >= u.cost) { mopsCoins -= u.cost; u.count++; u.cost *= 1.25; recalculateStats(); initShop(); updateUI(); saveGame(); }
         };
         window.buyVitamin = function(id) {
             let u = vitaminUpgrades.find(v=>v.id===id);
-            if(mopsCoins >= u.cost) {
-                mopsCoins -= u.cost; u.count++; u.cost = Math.floor(u.cost*1.5);
-                recalculateStats(); initShop(); updateUI(); saveGame();
-            }
+            if(mopsCoins >= u.cost) { mopsCoins -= u.cost; u.count++; u.cost *= 1.5; recalculateStats(); initShop(); updateUI(); saveGame(); }
         };
 
         function initShop() {
-            // Еда
             clicksPanel.innerHTML = '';
-            foodUpgrades.forEach(u => {
-                clicksPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">Куплено: ${u.count}</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyFood('${u.id}')">${formatValue(u.cost)}</button></div>`;
-            });
-            // Автокликеры
+            foodUpgrades.forEach(u => { clicksPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">Куплено: ${u.count}</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyFood('${u.id}')">${formatValue(u.cost)}</button></div>`; });
             autosPanel.innerHTML = '';
-            autoUpgrades.forEach(u => {
-                autosPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">Куплено: ${u.count}</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyAuto('${u.id}')">${formatValue(u.cost)}</button></div>`;
-            });
-            // Витамины
+            autoUpgrades.forEach(u => { autosPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">Куплено: ${u.count}</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyAuto('${u.id}')">${formatValue(u.cost)}</button></div>`; });
             vitaminsPanel.innerHTML = '';
-            vitaminUpgrades.forEach(u => {
-                vitaminsPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">${u.desc} (${u.count})</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyVitamin('${u.id}')">${formatValue(u.cost)}</button></div>`;
-            });
-            // Питомник
-            let aCost = 1000 + adultPugs * 1500;
-            let bCost = 300 + babyPugs * 400;
+            vitaminUpgrades.forEach(u => { vitaminsPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">${u.desc} (${u.count})</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyVitamin('${u.id}')">${formatValue(u.cost)}</button></div>`; });
+            
+            let aCost = 1000 + adultPugs * 1500; let bCost = 300 + babyPugs * 400;
             kennelPanel.innerHTML = `
-                <div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">Маленький мопс</div><div class="upgrade-desc">+1.5 МПС к пассивному доходу базово.</div></div><button class="buy-btn" id="btn-baby" onclick="buyPug('baby')">${formatValue(bCost)}</button></div>
-                <div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">Взрослый мопс</div><div class="upgrade-desc">+5 к силе клика базово.</div></div><button class="buy-btn" id="btn-adult" onclick="buyPug('adult')">${formatValue(aCost)}</button></div>
-            `;
-            // Ачивки
+                <div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">Маленький мопс</div><div class="upgrade-desc">+1.5 МПС пассивно.</div></div><button class="buy-btn" id="btn-baby" onclick="buyPug('baby')">${formatValue(bCost)}</button></div>
+                <div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">Взрослый мопс</div><div class="upgrade-desc">+5 к клику.</div></div><button class="buy-btn" id="btn-adult" onclick="buyPug('adult')">${formatValue(aCost)}</button></div>`;
+            
             achievsPanel.innerHTML = '';
-            achievements.forEach(ac => {
-                achievsPanel.innerHTML += `<div class="upgrade-item" style="opacity: ${ac.unlocked ? 1 : 0.4}"><div class="upgrade-info"><div class="upgrade-name">${ac.name}</div><div class="upgrade-desc">${ac.desc}</div></div><div style="font-weight:bold; color:#00ffcc">${ac.unlocked ? 'ВЫПОЛНЕНО' : 'ЗАКРЫТО'}</div></div>`;
-            });
+            achievements.forEach(ac => { achievsPanel.innerHTML += `<div class="upgrade-item" style="opacity: ${ac.unlocked ? 1 : 0.4}"><div class="upgrade-info"><div class="upgrade-name">${ac.name}</div><div class="upgrade-desc">${ac.desc}</div></div><div style="font-weight:bold; color:#00ffcc">${ac.unlocked ? 'ВЫПОЛНЕНО' : 'ЗАКРЫТО'}</div></div>`; });
         }
 
+        // ПОЛНАЯ СИСТЕМА НАИМЕНОВАНИЙ БОЛЬШИХ ЧИСЕЛ ДО КАТАСТРОФИЧЕСКИХ МАСШТАБОВ
         function formatValue(val) {
-            if (val === Infinity || val >= 1e22) return '∞';
+            if (val === Infinity || val >= 1e6000) return '∞';
+            
+            // Кастомные числа
+            if (val >= 1e5000) return (val / 1e5000).toFixed(2) + ' Мопсолион';
+            if (val >= 1e1000) return (val / 1e1000).toFixed(2) + ' Пердалион';
+            if (val >= 1e500) return (val / 1e500).toFixed(2) + ' Мегагугл';
+            if (val >= 1e100) return (val / 1e100).toFixed(2) + ' Гугол';
+            
+            // Официальные сверхбольшие числа
+            if (val >= 1e303) return (val / 1e303).toFixed(2) + ' Центиллион';
+            if (val >= 1e63) return (val / 1e63).toFixed(2) + ' Вигинтиллион';
+            if (val >= 1e60) return (val / 1e60).toFixed(2) + ' Новемдециллион';
+            if (val >= 1e57) return (val / 1e57).toFixed(2) + ' Октодециллион';
+            if (val >= 1e54) return (val / 1e54).toFixed(2) + ' Септендециллион';
+            if (val >= 1e51) return (val / 1e51).toFixed(2) + ' Сексдециллион';
+            if (val >= 1e48) return (val / 1e48).toFixed(2) + ' Квиндециллион';
+            if (val >= 1e45) return (val / 1e45).toFixed(2) + ' Кватуордециллион';
+            if (val >= 1e42) return (val / 1e42).toFixed(2) + ' Тредециллион';
+            if (val >= 1e39) return (val / 1e39).toFixed(2) + ' Дуодециллион';
+            if (val >= 1e36) return (val / 1e36).toFixed(2) + ' Ундециллион';
+            if (val >= 1e33) return (val / 1e33).toFixed(2) + ' Дециллион';
+            if (val >= 1e30) return (val / 1e30).toFixed(2) + ' Нониллион';
+            if (val >= 1e27) return (val / 1e27).toFixed(2) + ' Октиллион';
+            if (val >= 1e24) return (val / 1e24).toFixed(2) + ' Септиллион';
+            if (val >= 1e21) return (val / 1e21).toFixed(2) + ' Секст';
+            if (val >= 1e18) return (val / 1e18).toFixed(2) + ' Квинт';
+            if (val >= 1e15) return (val / 1e15).toFixed(2) + ' Квадр';
             if (val >= 1e12) return (val / 1e12).toFixed(2) + ' Трлн';
             if (val >= 1e9) return (val / 1e9).toFixed(2) + ' Млрд';
             if (val >= 1e6) return (val / 1e6).toFixed(2) + ' Млн';
+            
             return Math.floor(val).toLocaleString();
         }
 
@@ -468,7 +466,6 @@
             scoreEl.textContent = formatValue(mopsCoins) + ' МПС';
             mpsEl.textContent = `В секунду: ${formatValue(mopsPerSecond)} (Клик: +${formatValue(mpcPerClick)})`;
             
-            // Кнопки вкл/выкл
             foodUpgrades.forEach(u => { let b = document.getElementById(`btn-${u.id}`); if(b) b.disabled = mopsCoins < u.cost; });
             autoUpgrades.forEach(u => { let b = document.getElementById(`btn-${u.id}`); if(b) b.disabled = mopsCoins < u.cost; });
             vitaminUpgrades.forEach(u => { let b = document.getElementById(`btn-${u.id}`); if(b) b.disabled = mopsCoins < u.cost; });
@@ -479,7 +476,8 @@
 
         function createClickEffect(x, y, amount) {
             const text = document.createElement('div'); text.className = 'click-text';
-            text.textContent = `+${formatValue(amount)}`; text.style.left = `${x - 20}px`; text.style.top = `${y - 20}px`;
+            text.textContent = `+${formatValue(amount)}`; 
+            text.style.left = `${x - 25}px`; text.style.top = `${y - 25}px`;
             document.body.appendChild(text); setTimeout(() => text.remove(), 800);
         }
 
@@ -498,23 +496,13 @@
             }
         };
 
-        // Игровые тики
         setInterval(() => {
             if (mopsPerSecond > 0) { mopsCoins += mopsPerSecond / 10; updateUI(); }
-            // Настроение падает
-            mood = Math.max(10, mood - 0.1);
-            moodBar.style.width = mood + '%';
-            
-            // Проверка ачивок
-            achievements.forEach(ac => {
-                if(!ac.unlocked && ac.check()) { ac.unlocked = true; initShop(); }
-            });
+            mood = Math.max(10, mood - 0.1); moodBar.style.width = mood + '%';
+            achievements.forEach(ac => { if(!ac.unlocked && ac.check()) { ac.unlocked = true; initShop(); } });
         }, 100);
 
-        // Автосохранение каждые 15 секунд
         setInterval(saveGame, 15000);
-
-        // Старт игры
         checkFirstLaunch();
     </script>
 </body>
