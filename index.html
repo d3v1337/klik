@@ -3,142 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мопсокликер — ИНФИНАТИ ОБНОВЛЕНИЕ</title>
+    <title>Мопсокликер — НЕОНОВЫЙ КИБЕРПЕРДОН V3</title>
     <style>
         body {
             margin: 0; padding: 0;
-            background: #0d0d1a; color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #060613; color: #fff;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
             display: flex; height: 100vh; overflow: hidden; user-select: none;
         }
 
         /* Экран выбора в начале */
         #start-modal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(5, 5, 15, 0.95); z-index: 10000;
+            background: rgba(3, 3, 10, 0.98); z-index: 10000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .modal-container {
-            background: #1c1c3a; padding: 40px; border-radius: 15px;
-            border: 3px solid #ffb84d; text-align: center; max-width: 600px;
+            background: #0f0f26; padding: 40px; border-radius: 15px;
+            border: 3px solid #ff007f; text-align: center; max-width: 600px;
+            box-shadow: 0 0 30px #ff007f, inset 0 0 15px #ff007f;
         }
         .choice-btn {
-            background: #00ffcc; color: #000; border: none;
+            background: #00ffff; color: #000; border: none;
             padding: 15px 25px; margin: 15px; border-radius: 8px;
             font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 0 15px #00ffff;
         }
-        .choice-btn:hover { transform: scale(1.05); background: #00ccaa; }
+        .choice-btn:hover { transform: scale(1.05); box-shadow: 0 0 25px #00ffff; }
 
-        /* Левая панель */
+        /* Левая панель (Зона кликера) */
         .clicker-section {
             flex: 1; display: flex; flex-direction: column;
             align-items: center; justify-content: flex-start;
-            background: radial-gradient(circle, #251810 0%, #050510 100%);
+            background: linear-gradient(135deg, #0b001a 0%, #020208 100%);
             position: relative; padding: 20px; box-sizing: border-box;
             overflow-y: auto;
+            border-right: 2px solid #3d0066;
         }
 
-        /* Фиксированная зона для баланса над мопсом */
+        /* Шапка с балансом */
         .header-score-zone {
             text-align: center;
             width: 100%;
             margin-bottom: 20px;
             z-index: 10;
+            background: rgba(15, 0, 30, 0.7);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #ff007f;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.3);
         }
 
-        h1 { font-size: 2.3rem; margin: 0 0 5px 0; color: #ffb84d; text-shadow: 0 0 10px rgba(255, 184, 77, 0.5); }
-        .score-display { font-size: 2.2rem; font-weight: bold; margin-bottom: 5px; color: #00ffcc; word-wrap: break-word; }
-        .mpc-ps { font-size: 1.1rem; color: #fff; margin-bottom: 5px; }
+        h1 { 
+            font-size: 2.5rem; margin: 0 0 5px 0; color: #ff007f; 
+            text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f; 
+            letter-spacing: 2px;
+        }
+        .score-display { 
+            font-size: 2.4rem; font-weight: bold; margin-bottom: 5px; color: #00ffff; 
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; 
+            word-wrap: break-word; 
+        }
+        .mpc-ps { 
+            font-size: 1.2rem; color: #fff; margin-bottom: 5px;
+            text-shadow: 0 0 5px #fff;
+        }
         
-        /* Шкала настроения */
-        .mood-container { width: 300px; background: #333; height: 20px; border-radius: 10px; margin: 10px auto; overflow: hidden; border: 2px solid #ffb84d; cursor: pointer; }
-        .mood-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #ff3333, #ffb84d, #00ffcc); transition: width 0.3s; }
+        /* Неоновая шкала настроения */
+        .mood-container { 
+            width: 300px; background: #111; height: 20px; border-radius: 10px; 
+            margin: 10px auto; overflow: hidden; border: 2px solid #00ffff; 
+            cursor: pointer; box-shadow: 0 0 10px #00ffff;
+        }
+        .mood-bar { 
+            width: 100%; height: 100%; 
+            background: linear-gradient(90deg, #ff0055, #ffcc00, #00ffff); 
+            transition: width 0.3s; 
+        }
 
-        /* Контейнер мопса с большим запасом места для разжирения */
+        /* Контейнер мопса */
         .pug-container { 
             position: relative; 
             cursor: pointer; 
-            margin: 60px 0; /* Дает место, чтобы толстый мопс не залезал на текст */
+            margin: 40px 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 350px;
+            min-height: 360px;
         }
         .pug-image { 
-            width: 300px; 
-            height: 300px; 
+            width: 280px; 
+            height: 280px; 
             border-radius: 50%; 
             object-fit: cover; 
-            border: 5px solid #ffb84d; 
-            transition: transform 0.1s ease; 
+            border: 6px solid #ff007f; 
+            box-shadow: 0 0 30px #ff007f, inset 0 0 20px #ff007f;
+            transition: transform 0.05s ease; 
             transform-origin: center center;
         }
-
-        /* Комета-пельмень */
-        #dumpling-comet {
-            position: absolute; width: 60px; height: 60px;
-            background: #fff8e7; border-radius: 50%;
-            box-shadow: 0 0 20px #ffb84d, inset -5px -5px 10px #ddd;
-            display: none; cursor: pointer; z-index: 999;
-            font-size: 30px; text-align: center; line-height: 60px;
+        .pug-image:active {
+            transform: scale(0.95) !important;
         }
 
-        /* Правая панель */
-        .shop-section { width: 480px; background: #121225; border-left: 3px solid #ffb84d; display: flex; flex-direction: column; height: 100%; }
-        .tabs { display: flex; background: #1c1c3a; flex-wrap: wrap; }
-        .tab-btn { flex: 1; padding: 10px 2px; background: transparent; border: none; color: #aaa; font-size: 0.85rem; cursor: pointer; font-weight: bold; }
-        .tab-btn.active { color: #fff; background: #121225; border-bottom: 3px solid #00ffcc; }
-        .shop-content { flex: 1; overflow-y: auto; padding: 15px; box-sizing: border-box; }
+        /* Кибер-пельмень */
+        #dumpling-comet {
+            position: absolute; width: 60px; height: 60px;
+            background: #fff; border-radius: 50%;
+            box-shadow: 0 0 25px #00ffff, 0 0 50px #ff007f;
+            display: none; cursor: pointer; z-index: 999;
+            font-size: 30px; text-align: center; line-height: 60px;
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            from { transform: scale(1); } to { transform: scale(1.15); }
+        }
+
+        /* Магазин справа */
+        .shop-section { 
+            width: 500px; background: #090919; 
+            border-left: 3px solid #ff007f; 
+            box-shadow: -5px 0 25px rgba(255, 0, 127, 0.4);
+            display: flex; flex-direction: column; height: 100%; 
+        }
+        .tabs { display: flex; background: #120c24; flex-wrap: wrap; border-bottom: 2px solid #ff007f; }
+        .tab-btn { 
+            flex: 1; padding: 12px 2px; background: transparent; border: none; 
+            color: #777; font-size: 0.9rem; cursor: pointer; font-weight: bold;
+            font-family: inherit; transition: 0.2s;
+        }
+        .tab-btn.active { 
+            color: #00ffff; background: #090919; 
+            text-shadow: 0 0 10px #00ffff;
+            box-shadow: inset 0 -3px 0 #00ffff;
+        }
+        .shop-content { flex: 1; overflow-y: auto; padding: 15px; box-sizing: border-box; background: #070714; }
         .shop-panel { display: none; }
         .shop-panel.active { display: block; }
 
-        .upgrade-item { background: #1c1c3a; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        /* Элементы товаров */
+        .upgrade-item { 
+            background: #110e29; border: 1px solid #3d0066; border-radius: 8px; 
+            padding: 14px; margin-bottom: 14px; display: flex; 
+            justify-content: space-between; align-items: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: 0.2s;
+        }
+        .upgrade-item:hover {
+            border-color: #ff007f;
+            box-shadow: 0 0 12px rgba(255, 0, 127, 0.2);
+        }
         .upgrade-info { max-width: 65%; }
-        .upgrade-name { font-weight: bold; color: #ffb84d; }
-        .upgrade-desc { font-size: 0.8rem; color: #ccc; }
-        .buy-btn { background: #00ffcc; color: #000; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .buy-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
+        .upgrade-name { font-weight: bold; color: #ff007f; text-shadow: 0 0 5px rgba(255, 0, 127, 0.5); }
+        .upgrade-desc { font-size: 0.8rem; color: #b3b3cc; margin-top: 3px; }
+        
+        .buy-btn { 
+            background: #00ffff; color: #000; border: none; padding: 10px 16px; 
+            border-radius: 5px; font-weight: bold; cursor: pointer; 
+            font-family: inherit; box-shadow: 0 0 10px #00ffff;
+            transition: 0.2s;
+        }
+        .buy-btn:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 18px #00ffff; }
+        .buy-btn:disabled { background: #222; color: #555; cursor: not-allowed; box-shadow: none; border: 1px solid #333; }
 
-        /* Вылетающие цифры — теперь вылетают гарантированно поверх всего */
-        .click-text { position: absolute; color: #00ffcc; font-weight: bold; font-size: 1.8rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; text-shadow: 2px 2px 8px #000; z-index: 9999; }
-        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-120px) scale(1.2); opacity: 0; } }
+        /* Вылетающие неоновые цифры */
+        .click-text { 
+            position: absolute; color: #00ffff; font-weight: bold; font-size: 2rem; 
+            pointer-events: none; animation: floatUp 0.7s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; 
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; z-index: 9999; 
+        }
+        @keyframes floatUp { 
+            0% { transform: translateY(0) scale(1); opacity: 1; } 
+            100% { transform: translateY(-140px) scale(1.3); opacity: 0; } 
+        }
 
-        #victory-screen, #prestige-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        .save-notification { position: absolute; bottom: 20px; left: 20px; background: rgba(0, 255, 204, 0.2); border: 1px solid #00ffcc; padding: 8px 15px; border-radius: 5px; color: #00ffcc; opacity: 0; transition: opacity 0.5s; }
+        /* Специальные экраны */
+        #victory-screen, #prestige-screen { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background: #03030a; z-index: 99999; display: none; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 20px; 
+        }
+        .save-notification { 
+            position: absolute; bottom: 20px; left: 20px; background: rgba(0, 255, 255, 0.1); 
+            border: 1px solid #00ffff; padding: 8px 15px; border-radius: 5px; 
+            color: #00ffff; opacity: 0; transition: opacity 0.5s; box-shadow: 0 0 10px #00ffff;
+        }
     </style>
 </head>
 <body>
 
     <div id="start-modal" style="display: none;">
         <div class="modal-container">
-            <h2>Добро пожаловать в Мопсокликер!</h2>
-            <p>Выбери свой начальный бонус капитала:</p>
-            <button class="choice-btn" onclick="chooseStart('adult')">1 Взрослый мопс (+5 к силе клика)</button>
-            <button class="choice-btn" onclick="chooseStart('babies')">2 Маленьких мопса (+3 МПС/сек пассивно)</button>
+            <h2 style="color: #00ffff; text-shadow: 0 0 10px #00ffff;">КИБЕР-МОПСОЛИОН ЗАПУЩЕН</h2>
+            <p>Выбери стартовую инъекцию капитала:</p>
+            <button class="choice-btn" onclick="chooseStart('adult')">1 Неоновый Мопс (+5 к клику)</button>
+            <button class="choice-btn" onclick="chooseStart('babies')">2 Прото-Щенка (+3 МПС пассивно)</button>
         </div>
     </div>
 
     <div id="prestige-screen">
-        <h2>СУПЕРНОВА ЖИРА</h2>
-        <p>Мопс взорвался от переедания, разослав волны жира по вселенной!</p>
-        <p>Вы получили: <span id="folds-gained" style="color:#ffb84d; font-weight:bold;">0</span> Золотых Складок.</p>
-        <button class="choice-btn" onclick="confirmPrestige()">Начать новую эру сытости</button>
+        <h2 style="color: #ff007f; text-shadow: 0 0 15px #ff007f; font-size: 3rem;">СУПЕРНОВА ЖИРА И ПЕРДОНА</h2>
+        <p>Ядро мопса критически перегрузилось витаминами и аннигилировало вселенную!</p>
+        <p>Квантовый выход: <span id="folds-gained" style="color:#00ffff; font-weight:bold; text-shadow: 0 0 10px #00ffff;">0</span> Энерго-Складок.</p>
+        <button class="choice-btn" style="background: #ff007f; color:#fff; box-shadow: 0 0 15px #ff007f;" onclick="confirmPrestige()">Собрать сингулярность заново</button>
     </div>
 
     <div id="victory-screen">
-        <h2>КОНЕЦ ВСЕГО</h2>
-        <p>Мопс сожрал Абсолютно Всё. Игра окончена.</p>
-        <button class="choice-btn" onclick="resetGame(true)">Сбросить всё</button>
+        <h2 style="color: #00ffff; text-shadow: 0 0 20px #00ffff; font-size: 4rem;">МАТРИЦА СЪЕДЕНА</h2>
+        <p>Мопс сожрал Абсолютно Всё Измерение. Вы достигли сингулярности.</p>
+        <button class="choice-btn" onclick="resetGame(true)">Перезагрузить Матрицу</button>
     </div>
 
     <div class="clicker-section">
         <div class="header-score-zone">
             <h1 id="game-title">Мопсокликер</h1>
             <div class="score-display" id="score">0 МПС</div>
-            <div class="mpc-ps" id="mps-display">В секунду: 0</div>
-            <div style="color: #ffb84d; margin-bottom: 5px;" id="pack-display">Стая: 0 взр. / 0 мал.</div>
+            <div class="mpc-ps" id="mps-display">Пассивный лог: 0</div>
+            <div style="color: #ff007f; margin-bottom: 5px; font-weight: bold;" id="pack-display">Кибер-Стая: 0 взр. / 0 мал.</div>
             
-            <div style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">Настроение (Почеши пузико!):</div>
+            <div style="font-size: 0.85rem; color: #888; margin-top: 5px;">Синхронизация нейросети (Почеши пузо):</div>
             <div class="mood-container" onclick="scratchPug()">
                 <div class="mood-bar" id="mood-bar"></div>
             </div>
@@ -149,22 +232,22 @@
             <img src="Gemini_Generated_Image_a1v00ea1v00ea1v0.png" onerror="this.src='https://picsum.photos/id/1025/320/320'" class="pug-image" id="mops-pic" alt="Мопс">
         </div>
 
-        <div style="margin-top: auto; display: flex; gap: 10px; padding-bottom: 10px; z-index: 10;">
-            <button class="buy-btn" style="background:#ff9900;" onclick="triggerPrestigePage()">Взорваться (Престиж)</button>
-            <button class="buy-btn" style="background:#ff3333; color:#fff;" onclick="resetGame()">Сброс</button>
+        <div style="margin-top: auto; display: flex; gap: 15px; padding-bottom: 10px; z-index: 10;">
+            <button class="buy-btn" style="background:#ff007f; color: #fff; box-shadow: 0 0 15px #ff007f;" onclick="triggerPrestigePage()">Перегрузка Ядра (Престиж)</button>
+            <button class="buy-btn" style="background:#333; color:#aaa; box-shadow: none;" onclick="resetGame()">Сброс матрицы</button>
         </div>
-        <div style="margin-bottom: 20px; color: #ffb84d; z-index: 10;" id="prestige-info">Золотых Складок: 0 (Бонус: +0%)</div>
+        <div style="margin-bottom: 20px; color: #00ffff; text-shadow: 0 0 5px #00ffff; z-index: 10;" id="prestige-info">Квантовые Складки: 0 (Мощность: +0%)</div>
 
-        <div class="save-notification" id="save-notify">Сохранено!</div>
+        <div class="save-notification" id="save-notify">Дата-пакет сохранен!</div>
     </div>
 
     <div class="shop-section">
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('clicks')">Еда</button>
-            <button class="tab-btn" onclick="switchTab('autos')">Кликеры</button>
-            <button class="tab-btn" onclick="switchTab('vitamins')">Витамины</button>
-            <button class="tab-btn" onclick="switchTab('kennel')">Питомник</button>
-            <button class="tab-btn" onclick="switchTab('achievs')">Ачивки</button>
+            <button class="tab-btn" onclick="switchTab('autos')">Дроны</button>
+            <button class="tab-btn" onclick="switchTab('vitamins')">Стимуляторы</button>
+            <button class="tab-btn" onclick="switchTab('kennel')">Улей</button>
+            <button class="tab-btn" onclick="switchTab('achievs')">Логи</button>
         </div>
 
         <div class="shop-content">
@@ -177,73 +260,72 @@
     </div>
 
     <script>
-        // Глобальные переменные игры
-        let mopsCoins = 0;
-        let mpcPerClick = 1;
-        let mopsPerSecond = 0;
+        // Использование BigInt для предотвращения NaN поломок при любых степенях
+        let mopsCoins = 0n;
+        let mpcPerClick = 1n;
+        let mopsPerSecond = 0n; // Хранится как MPS * 10 для точных вычислений целых чисел
+        
         let mood = 100;
-        let goldenFolds = 0;
+        let goldenFolds = 0n;
         
-        let adultPugs = 0;
-        let babyPugs = 0;
+        let adultPugs = 0n;
+        let babyPugs = 0n;
         let totalDumplingsCaught = 0;
-        
-        let cometMultiplier = 1;
+        let cometMultiplier = 1n;
 
-        // Элементы UI
+        // UI узлы
         const scoreEl = document.getElementById('score');
         const mpsEl = document.getElementById('mps-display');
         const mopsPic = document.getElementById('mops-pic');
         const moodBar = document.getElementById('mood-bar');
         const cometEl = document.getElementById('dumpling-comet');
 
-        // Панели магазина
         const clicksPanel = document.getElementById('clicks-panel');
         const autosPanel = document.getElementById('autos-panel');
         const vitaminsPanel = document.getElementById('vitamins-panel');
         const kennelPanel = document.getElementById('kennel-panel');
         const achievsPanel = document.getElementById('achievs-panel');
 
-        // Списки улучшений (подстроены под супер-числа)
+        // Все стоимости и прибавки жестко инициализированы как BigInt (суффикс n)
         const foodUpgrades = [
-            { id: 'f1', name: 'Кусочек хлеба', cost: 10, add: 1, count: 0 },
-            { id: 'f2', name: 'Сосиска', cost: 100, add: 5, count: 0 },
-            { id: 'f3', name: 'Большая сосиска', cost: 500, add: 25, count: 0 },
-            { id: 'f4', name: 'Палка колбасы', cost: 2000, add: 120, count: 0 },
-            { id: 'f5', name: 'Суп', cost: 10000, add: 600, count: 0 },
-            { id: 'f6', name: 'Стол с едой', cost: 50000, add: 3500, count: 0 },
-            { id: 'f7', name: 'Кастрюля пельменей', cost: 250000, add: 20000, count: 0 },
-            { id: 'f9', name: 'Квартира', cost: 7000000, add: 550000, count: 0 },
-            { id: 'f10', name: 'Дом', cost: 50000000, add: 4000000, count: 0 },
-            { id: 'p3', name: 'Планета Земля', cost: 3.5e13, add: 8e12, count: 0 },
-            { id: 'p6', name: 'Сатурн (родной трон)', cost: 1e24, add: 4e22, count: 0 },
-            { id: 'c2', name: 'Завод Гугол-Пельменей', cost: 1e100, add: 1e99, count: 0 },
-            { id: 'c3', name: 'Гиперпространство Мегагугла', cost: 1e500, add: 1e499, count: 0 },
-            { id: 'c4', name: 'Пердальный Излучатель', cost: 1e1000, add: 1e999, count: 0 },
-            { id: 'c5', name: 'Сверхплотный Мопсолион', cost: 1e5000, add: 1e4999, count: 0 },
-            { id: 'infinity', name: 'БЕСКОНЕЧНОСТЬ', cost: 1e6000, add: 0, count: 0 }
+            { id: 'f1', name: 'Кусочек нео-хлеба', cost: 10n, add: 1n, count: 0n },
+            { id: 'f2', name: 'Лазерная сосиска', cost: 100n, add: 5n, count: 0n },
+            { id: 'f3', name: 'Гипер-колбаса', cost: 500n, add: 25n, count: 0n },
+            { id: 'f4', name: 'Палка сингулярного цезия', cost: 2000n, add: 120n, count: 0n },
+            { id: 'f5', name: 'Суп из темной материи', cost: 10000n, add: 600n, count: 0n },
+            { id: 'f6', name: 'Банкетный стол Киберпанка', cost: 50000n, add: 3500n, count: 0n },
+            { id: 'f7', name: 'Реактор пельменей', cost: 250000n, add: 20000n, count: 0n },
+            { id: 'f9', name: 'Жилой мегаблок', cost: 7000000n, add: 550000n, count: 0n },
+            { id: 'f10', name: 'Дата-центр', cost: 50000000n, add: 4000000n, count: 0n },
+            { id: 'p3', name: 'Континент Земли', cost: 35000000000000n, add: 8000000000000n, count: 0n },
+            { id: 'p6', name: 'Кольца Сатурна', cost: 1000000000000000000000000n, add: 40000000000000000000000n, count: 0n },
+            { id: 'c2', name: 'Матрица Гугол-Пельменей', cost: 10n**100n, add: 10n**99n, count: 0n },
+            { id: 'c3', name: 'Гипердрайв Мегагугла', cost: 10n**500n, add: 10n**499n, count: 0n },
+            { id: 'c4', name: 'Пердальный Излучатель частот', cost: 10n**1000n, add: 10n**999n, count: 0n },
+            { id: 'c5', name: 'Сверхплотный Мопсолион', cost: 10n**5000n, add: 10n**4999n, count: 0n },
+            { id: 'infinity', name: 'АННИГИЛЯЦИЯ МАТРИЦЫ', cost: 10n**6000n, add: 0n, count: 0n }
         ];
 
         const autoUpgrades = [
-            { id: 'a1', name: '«как то само кликает не знаю»', cost: 50, mps: 1, count: 0 },
-            { id: 'a2', name: '«полуавтокликер»', cost: 250, mps: 8, count: 0 },
-            { id: 'a3', name: '«почти автокликер»', cost: 1500, mps: 50, count: 0 },
-            { id: 'a4', name: '«автокликер»', cost: 8000, mps: 300, count: 0 },
-            { id: 'a5', name: '«очень автокликер»', cost: 50000, mps: 2000, count: 0 },
-            { id: 'a6', name: '«мега жесктйи автокликер»', cost: 300000, mps: 15000, count: 0 }
+            { id: 'a1', name: 'Авто-майнер «Случайный клик»', cost: 50n, mps: 10n, count: 0n },
+            { id: 'a2', name: 'Полуавтоматический скрипт', cost: 250n, mps: 80n, count: 0n },
+            { id: 'a3', name: 'Протокол «Почти Авто»', cost: 1500n, mps: 500n, count: 0n },
+            { id: 'a4', name: 'Ядерный автокликер', cost: 8000n, mps: 3000n, count: 0n },
+            { id: 'a5', name: 'Нейросеть-кликер', cost: 50000n, mps: 20000n, count: 0n },
+            { id: 'a6', name: 'Квантовый ИИ-Аннигилятор', cost: 300000n, mps: 150000n, count: 0n }
         ];
 
         const vitaminUpgrades = [
-            { id: 'v1', name: 'Аскорбинка', cost: 300, mult: 1.1, count: 0, desc: '+10% к силе роста.' },
-            { id: 'v2', name: 'Дрожжевой комплекс', cost: 4000, mult: 1.25, count: 0, desc: '+25% к массе.' },
-            { id: 'v3', name: 'Космический Кальций', cost: 80000, mult: 1.5, count: 0, desc: '+50% к мощи.' }
+            { id: 'v1', name: 'Нано-Аскорбинка', cost: 300n, mult: 110n, count: 0n, desc: '+10% к массе чипов.' },
+            { id: 'v2', name: 'Дрожжевой био-коктейль', cost: 4000n, mult: 125n, count: 0n, desc: '+25% к размерам ядра.' },
+            { id: 'v3', name: 'Космический Кальций-9', cost: 80000n, mult: 150n, count: 0n, desc: '+50% к сингулярности.' }
         ];
 
         const achievements = [
-            { id: 'ac1', name: 'Первая складка', desc: 'Собрать 1,000 мопскоинов.', unlocked: false, check: () => mopsCoins >= 1000 },
-            { id: 'ac2', name: 'Сосисочный Барон', desc: 'Купить 5 Больших сосисок.', unlocked: false, check: () => foodUpgrades.find(f=>f.id==='f3').count >= 5 },
-            { id: 'ac3', name: 'Пельменный снайпер', desc: 'Поймать 3 кометы-пельменя.', unlocked: false, check: () => totalDumplingsCaught >= 3 },
-            { id: 'ac4', name: 'Повелитель псов', desc: 'Иметь суммарно 10 мопсов в стае.', unlocked: false, check: () => (adultPugs + babyPugs) >= 10 }
+            { id: 'ac1', name: 'Первый сектор памяти', desc: 'Накопить 1,000 МПС.', unlocked: false, check: () => mopsCoins >= 1000n },
+            { id: 'ac2', name: 'Мясной магнат сети', desc: 'Установить 5 Гипер-колбас.', unlocked: false, check: () => foodUpgrades.find(f=>f.id==='f3').count >= 5n },
+            { id: 'ac3', name: 'Улавливатель квантов', desc: 'Словить 3 плазменных пельменя.', unlocked: false, check: () => totalDumplingsCaught >= 3 },
+            { id: 'ac4', name: 'Сверх-рой', desc: 'Интегрировать 10 юнитов в улей.', unlocked: false, check: () => (adultPugs + babyPugs) >= 10n }
         ];
 
         function performClick(clientX, clientY) {
@@ -254,32 +336,36 @@
 
         function saveGame() {
             const save = {
-                mopsCoins, adultPugs, babyPugs, goldenFolds, totalDumplingsCaught, mood,
-                food: foodUpgrades.map(f => ({ id: f.id, count: f.count, cost: f.cost })),
-                autos: autoUpgrades.map(a => ({ id: a.id, count: a.count, cost: a.cost })),
-                vitamins: vitaminUpgrades.map(v => ({ id: v.id, count: v.count, cost: v.cost })),
+                mopsCoins: mopsCoins.toString(),
+                adultPugs: adultPugs.toString(),
+                babyPugs: babyPugs.toString(),
+                goldenFolds: goldenFolds.toString(),
+                totalDumplingsCaught, mood,
+                food: foodUpgrades.map(f => ({ id: f.id, count: f.count.toString(), cost: f.cost.toString() })),
+                autos: autoUpgrades.map(a => ({ id: a.id, count: a.count.toString(), cost: a.cost.toString() })),
+                vitamins: vitaminUpgrades.map(v => ({ id: v.id, count: v.count.toString(), cost: v.cost.toString() })),
                 achievs: achievements.map(ac => ({ id: ac.id, unlocked: ac.unlocked }))
             };
-            localStorage.setItem('mops_clicker_mega_save', JSON.stringify(save));
+            localStorage.setItem('mops_neon_bigint_save', JSON.stringify(save));
             document.getElementById('save-notify').style.opacity = 1;
             setTimeout(() => document.getElementById('save-notify').style.opacity = 0, 1000);
         }
 
         function loadGame() {
-            const data = localStorage.getItem('mops_clicker_mega_save');
+            const data = localStorage.getItem('mops_neon_bigint_save');
             if (!data) return false;
             try {
                 const save = JSON.parse(data);
-                mopsCoins = save.mopsCoins || 0;
-                adultPugs = save.adultPugs || 0;
-                babyPugs = save.babyPugs || 0;
-                goldenFolds = save.goldenFolds || 0;
+                mopsCoins = BigInt(save.mopsCoins || '0');
+                adultPugs = BigInt(save.adultPugs || '0');
+                babyPugs = BigInt(save.babyPugs || '0');
+                goldenFolds = BigInt(save.goldenFolds || '0');
                 totalDumplingsCaught = save.totalDumplingsCaught || 0;
                 mood = save.mood !== undefined ? save.mood : 100;
 
-                if(save.food) save.food.forEach(s => { let x = foodUpgrades.find(f=>f.id===s.id); if(x){x.count=s.count; x.cost=s.cost;} });
-                if(save.autos) save.autos.forEach(s => { let x = autoUpgrades.find(a=>a.id===s.id); if(x){x.count=s.count; x.cost=s.cost;} });
-                if(save.vitamins) save.vitamins.forEach(s => { let x = vitaminUpgrades.find(v=>v.id===s.id); if(x){x.count=s.count; x.cost=s.cost;} });
+                if(save.food) save.food.forEach(s => { let x = foodUpgrades.find(f=>f.id===s.id); if(x){x.count=BigInt(s.count); x.cost=BigInt(s.cost);} });
+                if(save.autos) save.autos.forEach(s => { let x = autoUpgrades.find(a=>a.id===s.id); if(x){x.count=BigInt(s.count); x.cost=BigInt(s.cost);} });
+                if(save.vitamins) save.vitamins.forEach(s => { let x = vitaminUpgrades.find(v=>v.id===s.id); if(x){x.count=BigInt(s.count); x.cost=BigInt(s.cost);} });
                 if(save.achievs) save.achievs.forEach(s => { let x = achievements.find(ac=>ac.id===s.id); if(x){x.unlocked=s.unlocked;} });
                 return true;
             } catch(e) { return false; }
@@ -287,7 +373,7 @@
 
         function checkFirstLaunch() {
             const hasSave = loadGame();
-            if (!localStorage.getItem('mops_chosen_start') && !hasSave) {
+            if (!localStorage.getItem('mops_neon_start') && !hasSave) {
                 document.getElementById('start-modal').style.display = 'flex';
             } else {
                 recalculateStats();
@@ -297,42 +383,57 @@
         }
 
         window.chooseStart = function(type) {
-            if (type === 'adult') { adultPugs = 1; } else { babyPugs = 2; }
-            localStorage.setItem('mops_chosen_start', 'true');
+            if (type === 'adult') { adultPugs = 1n; } else { babyPugs = 2n; }
+            localStorage.setItem('mops_neon_start', 'true');
             document.getElementById('start-modal').style.display = 'none';
             recalculateStats(); initShop(); updateUI(); saveGame();
         };
 
         function recalculateStats() {
-            let baseClick = 1 + (adultPugs * 5);
+            let baseClick = 1n + (adultPugs * 5n);
             foodUpgrades.forEach(f => { if(f.id !== 'infinity') baseClick += f.count * f.add; });
 
-            let baseMps = babyPugs * 1.5;
+            let baseMps = babyPugs * 15n; // Хранится умноженным на 10
             autoUpgrades.forEach(a => baseMps += a.count * a.mps);
 
-            let vitMult = 1;
-            vitaminUpgrades.forEach(v => vitMult *= Math.pow(v.mult, v.count));
+            // Вычисление витаминных множителей через BigInt проценты
+            let vitMultClick = 100n;
+            let vitMultMps = 100n;
+            vitaminUpgrades.forEach(v => {
+                for(let i = 0n; i < v.count; i++) {
+                    vitMultClick = (vitMultClick * v.mult) / 100n;
+                    vitMultMps = (vitMultMps * v.mult) / 100n;
+                }
+            });
 
-            let prestigeMult = 1 + (goldenFolds * 0.5); 
-            let moodFactor = mood / 100;
+            let prestigeMult = 100n + (goldenFolds * 50n); // Каждая складка +50%
+            let moodFactor = BigInt(mood); // Процент настроения
 
-            mpcPerClick = baseClick * vitMult * prestigeMult * moodFactor * cometMultiplier;
-            mopsPerSecond = baseMps * vitMult * prestigeMult * moodFactor;
+            // Итоговая сборка параметров формул (все деления на 100n компенсируют базовые проценты)
+            let tempClick = (baseClick * vitMultClick) / 100n;
+            tempClick = (tempClick * prestigeMult) / 100n;
+            mpcPerClick = (tempClick * moodFactor * cometMultiplier) / 100n;
+            if(mpcPerClick < 1n) mpcPerClick = 1n;
 
-            // Динамические титулы по размеру кошелька
-            if (mopsCoins >= 1e5000) document.getElementById('game-title').textContent = "🐕 Божественный Мопсолион";
-            else if (mopsCoins >= 1e1000) document.getElementById('game-title').textContent = "💨 Император Пердалионов";
-            else if (mopsCoins >= 1e500) document.getElementById('game-title').textContent = "🪐 Мегагугловый Владыка";
-            else if (mopsCoins >= 1e100) document.getElementById('game-title').textContent = "🧮 Цифровой Гугол";
-            else if (mopsCoins >= 1e303) document.getElementById('game-title').textContent = "🌌 Центиллионная Складка";
-            else document.getElementById('game-title').textContent = "Мопсокликер";
+            let tempMps = (baseMps * vitMultMps) / 100n;
+            tempMps = (tempMps * prestigeMult) / 100n;
+            mopsPerSecond = (tempMps * moodFactor) / 100n; // Это значение всё еще умножено на 10
 
-            document.getElementById('pack-display').textContent = `Стая: ${adultPugs} взр. / ${babyPugs} мал.`;
-            document.getElementById('prestige-info').textContent = `Золотых Складок: ${goldenFolds} (Бонус: +${goldenFolds * 50}%)`;
+            // Динамическое обновление титулов кибер-ранга
+            if (mopsCoins >= 10n**5000n) document.getElementById('game-title').textContent = "🐕 Божественный Мопсолион";
+            else if (mopsCoins >= 10n**1000n) document.getElementById('game-title').textContent = "💨 Неоновый Пердалион";
+            else if (mopsCoins >= 10n**500n) document.getElementById('game-title').textContent = "🪐 Код Мегагугла";
+            else if (mopsCoins >= 10n**100n) document.getElementById('game-title').textContent = "🧮 Квантовый Гугол";
+            else if (mopsCoins >= 10n**303n) document.getElementById('game-title').textContent = "🌌 Центиллионная Сетка";
+            else document.getElementById('game-title').textContent = "Мопсокликер TERMINAL";
+
+            document.getElementById('pack-display').textContent = `Кибер-Стая: ${adultPugs} взр. / ${babyPugs} мал.`;
+            document.getElementById('prestige-info').textContent = `Квантовых Складок: ${goldenFolds} (Мощность: +${goldenFolds * 50n}%)`;
             
-            // Витамины расширяют мопса! Ограничим визуальный размер, чтобы он не сломал экран, но рос заметно
-            let scale = Math.min(3.5, 1 + (vitMult - 1) * 0.05);
-            mopsPic.style.transform = `scale(${scale})`;
+            // Масштабирование картинки в зависимости от стимуляторов
+            let rawScale = 100n + (vitMultClick - 100n) / 10n;
+            if (rawScale > 350n) rawScale = 350n; // Ограничение визуального размера до 3.5x
+            mopsPic.style.transform = `scale(${Number(rawScale) / 100})`;
         }
 
         document.getElementById('pug-click').addEventListener('click', (e) => {
@@ -344,8 +445,8 @@
             if (e.code === 'Space') {
                 e.preventDefault(); 
                 const rect = mopsPic.getBoundingClientRect();
-                const randomX = rect.left + rect.width / 2 + (Math.random() * 60 - 30);
-                const randomY = rect.top + rect.height / 2 + (Math.random() * 60 - 30);
+                const randomX = rect.left + rect.width / 2 + (Math.random() * 40 - 20);
+                const randomY = rect.top + rect.height / 2 + (Math.random() * 40 - 20);
                 performClick(randomX, randomY);
             }
         });
@@ -357,38 +458,39 @@
         };
 
         function spawnDumpling() {
-            if(cometMultiplier > 1) return;
-            let x = Math.random() * 160 + 20;
-            let y = Math.random() * 160 + 20;
+            if(cometMultiplier > 1n) return;
+            let x = Math.random() * 150 + 20;
+            let y = Math.random() * 150 + 20;
             cometEl.style.left = x + 'px'; cometEl.style.top = y + 'px';
             cometEl.style.display = 'block';
-            setTimeout(() => { cometEl.style.display = 'none'; }, 4000);
+            setTimeout(() => { cometEl.style.display = 'none'; }, 5000);
         }
         window.catchDumpling = function(e) {
             e.stopPropagation(); cometEl.style.display = 'none';
-            totalDumplingsCaught++; cometMultiplier = 5; recalculateStats();
-            setTimeout(() => { cometMultiplier = 1; recalculateStats(); }, 15000);
+            totalDumplingsCaught++; cometMultiplier = 5n; recalculateStats();
+            setTimeout(() => { cometMultiplier = 1n; recalculateStats(); }, 15000);
         };
-        setInterval(spawnDumpling, 45000);
+        setInterval(spawnDumpling, 40000);
 
         window.triggerPrestigePage = function() {
-            if(mopsCoins < 1e6) { alert("Нужно хотя бы 1,000,000 МПС для взрыва!"); return; }
-            let gained = Math.floor(Math.log10(mopsCoins) - 5);
-            gained = Math.max(1, gained);
-            document.getElementById('folds-gained').textContent = gained;
+            if(mopsCoins < 1000000n) { alert("Ядру требуется минимум 1,000,000 МПС для взрыва матрицы!"); return; }
+            // Вычисление количества получаемых складок на базе логарифма длины BigInt строки
+            let gained = BigInt(mopsCoins.toString().length) - 5n;
+            if(gained < 1n) gained = 1n;
+            document.getElementById('folds-gained').textContent = gained.toString();
             document.getElementById('prestige-screen').style.display = 'flex';
         };
         window.confirmPrestige = function() {
-            let gained = parseInt(document.getElementById('folds-gained').textContent);
-            goldenFolds += gained; mopsCoins = 0;
-            foodUpgrades.forEach(f => { f.count = 0; if(f.id!=='infinity') f.cost = Math.floor(f.cost / 2); }); 
-            autoUpgrades.forEach(a => a.count = 0);
+            let gained = BigInt(document.getElementById('folds-gained').textContent);
+            goldenFolds += gained; mopsCoins = 0n;
+            foodUpgrades.forEach(f => { f.count = 0n; if(f.id!=='infinity') f.cost = f.cost / 2n; if(f.cost < 1n) f.cost = 1n; }); 
+            autoUpgrades.forEach(a => a.count = 0n);
             document.getElementById('prestige-screen').style.display = 'none';
             recalculateStats(); initShop(); updateUI(); saveGame();
         };
 
         window.buyPug = function(type) {
-            let cost = type === 'adult' ? (1000 + adultPugs * 1500) : (300 + babyPugs * 400);
+            let cost = type === 'adult' ? (1000n + adultPugs * 1500n) : (300n + babyPugs * 400n);
             if(mopsCoins >= cost) {
                 mopsCoins -= cost; if(type === 'adult') adultPugs++; else babyPugs++;
                 recalculateStats(); initShop(); updateUI(); saveGame();
@@ -398,87 +500,91 @@
         window.buyFood = function(id) {
             let u = foodUpgrades.find(f=>f.id===id);
             if(id === 'infinity' && mopsCoins >= u.cost) { document.getElementById('victory-screen').style.display = 'flex'; return; }
-            if(mopsCoins >= u.cost) { mopsCoins -= u.cost; u.count++; u.cost *= 1.3; recalculateStats(); initShop(); updateUI(); saveGame(); }
+            if(mopsCoins >= u.cost) { mopsCoins -= u.cost; u.count++; u.cost = (u.cost * 13n) / 10n; recalculateStats(); initShop(); updateUI(); saveGame(); }
         };
         window.buyAuto = function(id) {
             let u = autoUpgrades.find(a=>a.id===id);
-            if(mopsCoins >= u.cost) { mopsCoins -= u.cost; u.count++; u.cost *= 1.25; recalculateStats(); initShop(); updateUI(); saveGame(); }
+            if(mopsCoins >= u.cost) { mopsCoins -= u.cost; u.count++; u.cost = (u.cost * 125n) / 100n; recalculateStats(); initShop(); updateUI(); saveGame(); }
         };
         window.buyVitamin = function(id) {
             let u = vitaminUpgrades.find(v=>v.id===id);
-            if(mopsCoins >= u.cost) { mopsCoins -= u.cost; u.count++; u.cost *= 1.5; recalculateStats(); initShop(); updateUI(); saveGame(); }
+            if(mopsCoins >= u.cost) { mopsCoins -= u.cost; u.count++; u.cost = (u.cost * 15n) / 10n; recalculateStats(); initShop(); updateUI(); saveGame(); }
         };
 
         function initShop() {
             clicksPanel.innerHTML = '';
-            foodUpgrades.forEach(u => { clicksPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">Куплено: ${u.count}</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyFood('${u.id}')">${formatValue(u.cost)}</button></div>`; });
+            foodUpgrades.forEach(u => { clicksPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">Интегрировано: ${u.count}</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyFood('${u.id}')">${formatValue(u.cost)}</button></div>`; });
             autosPanel.innerHTML = '';
-            autoUpgrades.forEach(u => { autosPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">Куплено: ${u.count}</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyAuto('${u.id}')">${formatValue(u.cost)}</button></div>`; });
+            autoUpgrades.forEach(u => { autosPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">Запущено: ${u.count}</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyAuto('${u.id}')">${formatValue(u.cost)}</button></div>`; });
             vitaminsPanel.innerHTML = '';
             vitaminUpgrades.forEach(u => { vitaminsPanel.innerHTML += `<div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">${u.desc} (${u.count})</div></div><button class="buy-btn" id="btn-${u.id}" onclick="buyVitamin('${u.id}')">${formatValue(u.cost)}</button></div>`; });
             
-            let aCost = 1000 + adultPugs * 1500; let bCost = 300 + babyPugs * 400;
+            let aCost = 1000n + adultPugs * 1500n; let bCost = 300n + babyPugs * 400n;
             kennelPanel.innerHTML = `
-                <div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">Маленький мопс</div><div class="upgrade-desc">+1.5 МПС пассивно.</div></div><button class="buy-btn" id="btn-baby" onclick="buyPug('baby')">${formatValue(bCost)}</button></div>
-                <div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">Взрослый мопс</div><div class="upgrade-desc">+5 к клику.</div></div><button class="buy-btn" id="btn-adult" onclick="buyPug('adult')">${formatValue(aCost)}</button></div>`;
+                <div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">Прото-Щенок</div><div class="upgrade-desc">+1.5 МПС в улей ядра.</div></div><button class="buy-btn" id="btn-baby" onclick="buyPug('baby')">${formatValue(bCost)}</button></div>
+                <div class="upgrade-item"><div class="upgrade-info"><div class="upgrade-name">Неоновый Мопс</div><div class="upgrade-desc">+5 к пропускной способности клика.</div></div><button class="buy-btn" id="btn-adult" onclick="buyPug('adult')">${formatValue(aCost)}</button></div>`;
             
             achievsPanel.innerHTML = '';
-            achievements.forEach(ac => { achievsPanel.innerHTML += `<div class="upgrade-item" style="opacity: ${ac.unlocked ? 1 : 0.4}"><div class="upgrade-info"><div class="upgrade-name">${ac.name}</div><div class="upgrade-desc">${ac.desc}</div></div><div style="font-weight:bold; color:#00ffcc">${ac.unlocked ? 'ВЫПОЛНЕНО' : 'ЗАКРЫТО'}</div></div>`; });
+            achievements.forEach(ac => { achievsPanel.innerHTML += `<div class="upgrade-item" style="opacity: ${ac.unlocked ? 1 : 0.3}"><div class="upgrade-info"><div class="upgrade-name">${ac.name}</div><div class="upgrade-desc">${ac.desc}</div></div><div style="font-weight:bold; color:#00ffff; text-shadow:0 0 5px #00ffff">${ac.unlocked ? 'ВЫПОЛНЕНО' : 'ЗАКРЫТО'}</div></div>`; });
         }
 
-        // ПОЛНАЯ СИСТЕМА НАИМЕНОВАНИЙ БОЛЬШИХ ЧИСЕЛ ДО КАТАСТРОФИЧЕСКИХ МАСШТАБОВ
+        // Парсинг огромных чисел через анализ длины строки BigInt (чтобы не падать в NaN)
         function formatValue(val) {
-            if (val === Infinity || val >= 1e6000) return '∞';
+            if (val >= 10n**6000n) return '∞';
             
-            // Кастомные числа
-            if (val >= 1e5000) return (val / 1e5000).toFixed(2) + ' Мопсолион';
-            if (val >= 1e1000) return (val / 1e1000).toFixed(2) + ' Пердалион';
-            if (val >= 1e500) return (val / 1e500).toFixed(2) + ' Мегагугл';
-            if (val >= 1e100) return (val / 1e100).toFixed(2) + ' Гугол';
+            let s = val.toString();
+            let len = s.length;
+
+            if (len > 5000) return (Number(val / 10n**4998n) / 100).toFixed(2) + ' Мопсолион';
+            if (len > 1000) return (Number(val / 10n**998n) / 100).toFixed(2) + ' Пердалион';
+            if (len > 500) return (Number(val / 10n**498n) / 100).toFixed(2) + ' Мегагугл';
+            if (len > 100) return (Number(val / 10n**98n) / 100).toFixed(2) + ' Гугол';
             
-            // Официальные сверхбольшие числа
-            if (val >= 1e303) return (val / 1e303).toFixed(2) + ' Центиллион';
-            if (val >= 1e63) return (val / 1e63).toFixed(2) + ' Вигинтиллион';
-            if (val >= 1e60) return (val / 1e60).toFixed(2) + ' Новемдециллион';
-            if (val >= 1e57) return (val / 1e57).toFixed(2) + ' Октодециллион';
-            if (val >= 1e54) return (val / 1e54).toFixed(2) + ' Септендециллион';
-            if (val >= 1e51) return (val / 1e51).toFixed(2) + ' Сексдециллион';
-            if (val >= 1e48) return (val / 1e48).toFixed(2) + ' Квиндециллион';
-            if (val >= 1e45) return (val / 1e45).toFixed(2) + ' Кватуордециллион';
-            if (val >= 1e42) return (val / 1e42).toFixed(2) + ' Тредециллион';
-            if (val >= 1e39) return (val / 1e39).toFixed(2) + ' Дуодециллион';
-            if (val >= 1e36) return (val / 1e36).toFixed(2) + ' Ундециллион';
-            if (val >= 1e33) return (val / 1e33).toFixed(2) + ' Дециллион';
-            if (val >= 1e30) return (val / 1e30).toFixed(2) + ' Нониллион';
-            if (val >= 1e27) return (val / 1e27).toFixed(2) + ' Октиллион';
-            if (val >= 1e24) return (val / 1e24).toFixed(2) + ' Септиллион';
-            if (val >= 1e21) return (val / 1e21).toFixed(2) + ' Секст';
-            if (val >= 1e18) return (val / 1e18).toFixed(2) + ' Квинт';
-            if (val >= 1e15) return (val / 1e15).toFixed(2) + ' Квадр';
-            if (val >= 1e12) return (val / 1e12).toFixed(2) + ' Трлн';
-            if (val >= 1e9) return (val / 1e9).toFixed(2) + ' Млрд';
-            if (val >= 1e6) return (val / 1e6).toFixed(2) + ' Млн';
+            if (val >= 10n**303n) return (Number(val / 10n**301n) / 100).toFixed(2) + ' Центиллион';
+            if (val >= 10n**63n) return (Number(val / 10n**61n) / 100).toFixed(2) + ' Вигинтиллион';
+            if (val >= 10n**60n) return (Number(val / 10n**58n) / 100).toFixed(2) + ' Новемдециллион';
+            if (val >= 10n**57n) return (Number(val / 10n**55n) / 100).toFixed(2) + ' Октодециллион';
+            if (val >= 10n**54n) return (Number(val / 10n**52n) / 100).toFixed(2) + ' Септендециллион';
+            if (val >= 10n**51n) return (Number(val / 10n**49n) / 100).toFixed(2) + ' Сексдециллион';
+            if (val >= 10n**48n) return (Number(val / 10n**46n) / 100).toFixed(2) + ' Квиндециллион';
+            if (val >= 10n**45n) return (Number(val / 10n**43n) / 100).toFixed(2) + ' Кватуордециллион';
+            if (val >= 10n**42n) return (Number(val / 10n**40n) / 100).toFixed(2) + ' Тредециллион';
+            if (val >= 10n**39n) return (Number(val / 10n**37n) / 100).toFixed(2) + ' Дуодециллион';
+            if (val >= 10n**36n) return (Number(val / 10n**34n) / 100).toFixed(2) + ' Ундециллион';
+            if (val >= 10n**33n) return (Number(val / 10n**31n) / 100).toFixed(2) + ' Дециллион';
+            if (val >= 10n**30n) return (Number(val / 10n**28n) / 100).toFixed(2) + ' Нониллион';
+            if (val >= 10n**27n) return (Number(val / 10n**25n) / 100).toFixed(2) + ' Октиллион';
+            if (val >= 10n**24n) return (Number(val / 10n**22n) / 100).toFixed(2) + ' Септиллион';
+            if (val >= 10n**21n) return (Number(val / 10n**19n) / 100).toFixed(2) + ' Секст';
+            if (val >= 10n**18n) return (Number(val / 10n**16n) / 100).toFixed(2) + ' Квинт';
+            if (val >= 10n**15n) return (Number(val / 10n**13n) / 100).toFixed(2) + ' Квадр';
+            if (val >= 10n**12n) return (Number(val / 10n**10n) / 100).toFixed(2) + ' Трлн';
+            if (val >= 10n**9n) return (Number(val / 10n**7n) / 100).toFixed(2) + ' Млрд';
+            if (val >= 10n**6n) return (Number(val / 10n**4n) / 100).toFixed(2) + ' Млн';
             
-            return Math.floor(val).toLocaleString();
+            return Number(val).toLocaleString();
         }
 
         function updateUI() {
             scoreEl.textContent = formatValue(mopsCoins) + ' МПС';
-            mpsEl.textContent = `В секунду: ${formatValue(mopsPerSecond)} (Клик: +${formatValue(mpcPerClick)})`;
+            
+            // Восстановление реального значения MPS (деление накопленного тика на 10)
+            let realMps = mopsPerSecond / 10n;
+            mpsEl.textContent = `Выработка сети/сек: ${formatValue(realMps)} (Импульс клика: +${formatValue(mpcPerClick)})`;
             
             foodUpgrades.forEach(u => { let b = document.getElementById(`btn-${u.id}`); if(b) b.disabled = mopsCoins < u.cost; });
             autoUpgrades.forEach(u => { let b = document.getElementById(`btn-${u.id}`); if(b) b.disabled = mopsCoins < u.cost; });
             vitaminUpgrades.forEach(u => { let b = document.getElementById(`btn-${u.id}`); if(b) b.disabled = mopsCoins < u.cost; });
             
-            let bBaby = document.getElementById('btn-baby'); if(bBaby) bBaby.disabled = mopsCoins < (300 + babyPugs * 400);
-            let bAdult = document.getElementById('btn-adult'); if(bAdult) bAdult.disabled = mopsCoins < (1000 + adultPugs * 1500);
+            let bBaby = document.getElementById('btn-baby'); if(bBaby) bBaby.disabled = mopsCoins < (300n + babyPugs * 400n);
+            let bAdult = document.getElementById('btn-adult'); if(bAdult) bAdult.disabled = mopsCoins < (1000n + adultPugs * 1500n);
         }
 
         function createClickEffect(x, y, amount) {
             const text = document.createElement('div'); text.className = 'click-text';
             text.textContent = `+${formatValue(amount)}`; 
             text.style.left = `${x - 25}px`; text.style.top = `${y - 25}px`;
-            document.body.appendChild(text); setTimeout(() => text.remove(), 800);
+            document.body.appendChild(text); setTimeout(() => text.remove(), 700);
         }
 
         function switchTab(tab) {
@@ -489,15 +595,19 @@
         }
 
         window.resetGame = function(force=false) {
-            if(force || confirm("Сбросить стаю и пузо мопса?")) {
-                localStorage.removeItem('mops_chosen_start'); 
-                localStorage.removeItem('mops_clicker_mega_save');
+            if(force || confirm("ВНИМАНИЕ: Стереть сигнатуры Улья и обнулить текущий код мопса?")) {
+                localStorage.removeItem('mops_neon_start'); 
+                localStorage.removeItem('mops_neon_bigint_save');
                 location.reload();
             }
         };
 
+        // Основной такт таймера (100мс)
         setInterval(() => {
-            if (mopsPerSecond > 0) { mopsCoins += mopsPerSecond / 10; updateUI(); }
+            if (mopsPerSecond > 0n) { 
+                mopsCoins += mopsPerSecond / 10n; 
+                updateUI(); 
+            }
             mood = Math.max(10, mood - 0.1); moodBar.style.width = mood + '%';
             achievements.forEach(ac => { if(!ac.unlocked && ac.check()) { ac.unlocked = true; initShop(); } });
         }, 100);
