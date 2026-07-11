@@ -82,7 +82,6 @@
 </head>
 <body>
 
-    <!-- Модалка старта -->
     <div id="start-modal" style="display: none;">
         <div class="modal-container">
             <h2>Добро пожаловать в Мопсокликер!</h2>
@@ -92,7 +91,6 @@
         </div>
     </div>
 
-    <!-- Экран престижа -->
     <div id="prestige-screen">
         <h2>СУПЕРНОВА ЖИРА</h2>
         <p>Мопс взорвался от переедания, разослав волны жира по вселенной!</p>
@@ -100,14 +98,12 @@
         <button class="choice-btn" onclick="confirmPrestige()">Начать новую эру сытости</button>
     </div>
 
-    <!-- Экран победы -->
     <div id="victory-screen">
         <h2>КОНЕЦ ВСЕГО</h2>
         <p>Мопс поглотил Бесконечность. Игра окончена.</p>
         <button class="choice-btn" onclick="resetGame(true)">Сбросить всё</button>
     </div>
 
-    <!-- Левая секция -->
     <div class="clicker-section">
         <h1 id="game-title">Мопсокликер</h1>
         <div class="score-display" id="score">0 МПС</div>
@@ -134,12 +130,11 @@
         <div class="save-notification" id="save-notify">Сохранено!</div>
     </div>
 
-    <!-- Магазин -->
     <div class="shop-section">
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('clicks')">Еда</button>
             <button class="tab-btn" onclick="switchTab('autos')">Кликеры</button>
-            <button class="tab-btn" onclick="switchTab('vitamins')">Витаны</button>
+            <button class="tab-btn" onclick="switchTab('vitamins')">Витамины</button>
             <button class="tab-btn" onclick="switchTab('kennel')">Питомник</button>
             <button class="tab-btn" onclick="switchTab('achievs')">Ачивки</button>
         </div>
@@ -175,7 +170,7 @@
         const moodBar = document.getElementById('mood-bar');
         const cometEl = document.getElementById('dumpling-comet');
 
-        // Связываем панели магазина с переменными (Исправлено!)
+        // Панели магазина
         const clicksPanel = document.getElementById('clicks-panel');
         const autosPanel = document.getElementById('autos-panel');
         const vitaminsPanel = document.getElementById('vitamins-panel');
@@ -222,7 +217,14 @@
             { id: 'ac4', name: 'Повелитель псов', desc: 'Иметь суммарно 10 мопсов в стае.', unlocked: false, check: () => (adultPugs + babyPugs) >= 10 }
         ];
 
-        // Новая система сохранения через localStorage (Исправлено!)
+        // Функция общего клика (для мышки и клавиатуры)
+        function performClick(clientX, clientY) {
+            mopsCoins += mpcPerClick;
+            createClickEffect(clientX, clientY, mpcPerClick);
+            updateUI();
+        }
+
+        // Система сохранения через localStorage
         function saveGame() {
             const save = {
                 mopsCoins, adultPugs, babyPugs, goldenFolds, totalDumplingsCaught, mood,
@@ -316,12 +318,28 @@
             mopsPic.style.transform = `scale(${scale})`;
         }
 
-        // Клик и Настроение
+        // Клик Мышкой по мопсу
         document.getElementById('pug-click').addEventListener('click', (e) => {
             if(e.target === cometEl) return;
-            mopsCoins += mpcPerClick;
-            createClickEffect(e.clientX, e.clientY, mpcPerClick);
-            updateUI();
+            performClick(e.clientX, e.clientY);
+        });
+
+        // Клик через ПРОБЕЛ на клавиатуре (Новая фича!)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault(); // Запрещаем прокрутку страницы вниз при нажатии пробела
+                
+                // Эмулируем координаты клика в районе центра картинки мопса
+                const rect = mopsPic.getBoundingClientRect();
+                const randomX = rect.left + rect.width / 2 + (Math.random() * 60 - 30);
+                const randomY = rect.top + rect.height / 2 + (Math.random() * 60 - 30);
+                
+                // Делаем легкий визуальный «толчок» мопса при клике на пробел
+                mopsPic.style.transform = mopsPic.style.transform + ' scale(0.97)';
+                setTimeout(() => recalculateStats(), 40);
+
+                performClick(randomX, randomY);
+            }
         });
 
         window.scratchPug = function() {
@@ -384,7 +402,7 @@
             }
         };
 
-        // Остальная логика магазина
+        // Логика магазина
         window.buyFood = function(id) {
             let u = foodUpgrades.find(f=>f.id===id);
             if(id === 'infinity' && mopsCoins >= u.cost) { document.getElementById('victory-screen').style.display = 'flex'; return; }
@@ -442,7 +460,7 @@
             if (val === Infinity || val >= 1e22) return '∞';
             if (val >= 1e12) return (val / 1e12).toFixed(2) + ' Трлн';
             if (val >= 1e9) return (val / 1e9).toFixed(2) + ' Млрд';
-            if (val >= 1e6) return (val / 1e6).toFixed(2) + ' Мн';
+            if (val >= 1e6) return (val / 1e6).toFixed(2) + ' Млн';
             return Math.floor(val).toLocaleString();
         }
 
@@ -450,7 +468,7 @@
             scoreEl.textContent = formatValue(mopsCoins) + ' МПС';
             mpsEl.textContent = `В секунду: ${formatValue(mopsPerSecond)} (Клик: +${formatValue(mpcPerClick)})`;
             
-            // Проверка доступности кнопок вкл/выкл
+            // Кнопки вкл/выкл
             foodUpgrades.forEach(u => { let b = document.getElementById(`btn-${u.id}`); if(b) b.disabled = mopsCoins < u.cost; });
             autoUpgrades.forEach(u => { let b = document.getElementById(`btn-${u.id}`); if(b) b.disabled = mopsCoins < u.cost; });
             vitaminUpgrades.forEach(u => { let b = document.getElementById(`btn-${u.id}`); if(b) b.disabled = mopsCoins < u.cost; });
